@@ -1,4 +1,4 @@
-﻿public class MoveCommand : Command
+public class MoveCommand : Command
 {
     PlayerMovement playerMovement;
     float h, v;
@@ -22,7 +22,12 @@
     {
         //Invers arah dari movement player
         playerMovement.Move(-h, -v);
-        //Menganimasikan player
-        playerMovement.Animating(h, v);
+        //Menganimasikan player dengan arah invers
+        playerMovement.Animating(-h, -v);
+    }
+
+    public override bool IsValid()
+    {
+        return playerMovement != null;
     }
 }

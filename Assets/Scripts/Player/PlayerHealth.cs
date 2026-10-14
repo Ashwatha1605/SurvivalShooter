@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
 using UnityEngine.SceneManagement;
@@ -12,6 +12,8 @@ public class PlayerHealth : MonoBehaviour
     public AudioClip deathClip;
     public float flashSpeed = 5f;
     public Color flashColour = new Color(1f, 0f, 0f, 0.1f);
+    [Range(0f, 1f)]
+    public float armorReduction = 0f;
 
 
     Animator anim;
@@ -40,16 +42,33 @@ public class PlayerHealth : MonoBehaviour
         if (damaged)
         {
             //Merubah warna gambar menjadi value dari flashColour
-            damageImage.color = flashColour;
+            if (damageImage != null)
+            {
+                damageImage.color = flashColour;
+            }
         }
         else
         {
             //Fade out damage image
-            damageImage.color = Color.Lerp(damageImage.color, Color.clear, flashSpeed * Time.deltaTime);
+            if (damageImage != null)
+            {
+                damageImage.color = Color.Lerp(damageImage.color, Color.clear, flashSpeed * Time.deltaTime);
+            }
         }
 
         //Set damage to false
         damaged = false;
+    }
+
+
+    // Menghitung damage efektif setelah mitigasi armor
+    public int CalculateEffectiveDamage(int rawDamage, float armor)
+    {
+        if (rawDamage <= 0)
+            return 0;
+
+        float clampedArmor = Mathf.Clamp(armor, 0f, 0.8f);
+        return Mathf.RoundToInt(rawDamage * (1f - clampedArmor));
     }
 
 
@@ -58,16 +77,24 @@ public class PlayerHealth : MonoBehaviour
     {
         damaged = true;
 
+        int effectiveDamage = CalculateEffectiveDamage(amount, armorReduction);
+
         //mengurangi health
-        currentHealth -= amount;
+        currentHealth -= effectiveDamage;
 
         //Merubah tampilan dari health slider
-        healthSlider.value = currentHealth;
+        if (healthSlider != null)
+        {
+            healthSlider.value = currentHealth;
+        }
 
         //Memainkan suara ketika terkena damage
-        playerAudio.Play();
+        if (playerAudio != null)
+        {
+            playerAudio.Play();
+        }
 
-        //Memanggil method Death() jika darahnya kurang dari sama dengan 10 dan belu mati
+        //Memanggil method Death() jika darahnya kurang dari sama dengan 0 dan belum mati
         if (currentHealth <= 0 && !isDead)
         {
             Death();
@@ -75,21 +102,15 @@ public class PlayerHealth : MonoBehaviour
     }
 
     // fungsi untuk menambah nyawa
-    public void Healing()
+    public void Healing(int amount = 40)
     {
-        //mengurangi health
-        int newHealth = currentHealth + 40;
-        if (newHealth >= 100)
-        {
-            currentHealth = 100;
-        }
-        else
-        {
-            currentHealth = newHealth;
-        }
+        currentHealth = Mathf.Min(currentHealth + amount, startingHealth);
 
         //Merubah tampilan dari health slider
-        healthSlider.value = currentHealth;
+        if (healthSlider != null)
+        {
+            healthSlider.value = currentHealth;
+        }
     }
 
 

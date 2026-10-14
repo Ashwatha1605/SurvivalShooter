@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 public class EnemyHealth : MonoBehaviour
 {
@@ -83,6 +83,16 @@ public class EnemyHealth : MonoBehaviour
         enemyAudio.Play();
     }
 
+
+    // Menghitung perolehan skor dengan multiplier combo
+    public int CalculateScoreReward(int baseScore, int comboMultiplier = 1)
+    {
+        if (baseScore <= 0) return 0;
+        int multiplier = Mathf.Max(1, comboMultiplier);
+        return baseScore * multiplier;
+    }
+
+
     public void StartSinking()
     {
         //disable Navmesh Component
@@ -90,7 +100,7 @@ public class EnemyHealth : MonoBehaviour
         //Set rigisbody ke kimematic
         GetComponent<Rigidbody>().isKinematic = true;
         isSinking = true;
-        ScoreManager.score += scoreValue;
+        ScoreManager.score += CalculateScoreReward(scoreValue, 1);
         Destroy(gameObject, 2f);
     }
 }
